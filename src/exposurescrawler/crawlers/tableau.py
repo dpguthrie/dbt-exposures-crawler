@@ -67,7 +67,7 @@ def _parse_tables_from_sql(workbooks_sqls: WorkbookModelsMapping, models) -> Wor
 
 
 def tableau_crawler(
-    manifest_path_or_str: Union[str, Dict],
+    manifest_path: Union[str, Dict],
     dbt_package_name: str,
     tableau_projects_to_ignore: Collection[str],
     verbose: bool,
@@ -77,22 +77,12 @@ def tableau_crawler(
     if verbose:
         logger().setLevel(logging.DEBUG)
     
-    method: str = None
+    # Parse arguments
+    manifest_path = os.path.expandvars(manifest_path)
+    manifest_path = os.path.expanduser(manifest_path)
 
-    try:
-        manifest: DbtManifest = DbtManifest.from_json_str(manifest_path_or_str)
-        method = 'save_to_yml'
-        manifest_path_or_str = yml_path
-    
-    except ValueError:
-    
-        # Parse arguments
-        manifest_path_or_str = os.path.expandvars(manifest_path_or_str)
-        manifest_path_or_str = os.path.expanduser(manifest_path_or_str)
-
-        # Parse the dbt manifest JSON file
-        manifest: DbtManifest = DbtManifest.from_file(manifest_path_or_str)
-        method = 'save'
+    # Parse the dbt manifest JSON file
+    manifest: DbtManifest = DbtManifest.from_file(manifest_path)
 
     # Retrieve all models
     models = manifest.retrieve_models_and_sources()
@@ -155,8 +145,8 @@ def tableau_crawler(
 
     # Persist the modified manifest
     logger().info('')
-    logger().info(f'💾 Writing results to file: {manifest_path_or_str}')
-    getattr(manifest, method)(manifest_path_or_str)
+    logger().info(f'💾 Writing results to file: {manifest_path}')
+    manifest.save_to_yml('models/tableau_exposures.yml')
 
 
 @click.command()

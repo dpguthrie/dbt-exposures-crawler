@@ -14,10 +14,6 @@ class DbtManifest(UserDict):
 
         return cls(manifest)
     
-    def from_json_str(cls: Type['DbtManifest'], json_str: str) -> 'DbtManifest':
-        manifest = json.loads(json_str)
-        return cls(manifest)
-
     def retrieve_models_and_sources(self) -> Dict[str, Any]:
         """
         Returns all models and sources from the manifest in a dictionary.
