@@ -6,6 +6,8 @@ from typing import Mapping, Any, Iterable
 from slugify import slugify
 
 
+VALID_PROPERTIES = ('name', 'type', 'owner', 'depends_on', 'url', 'maturity', 'owner', 'description', 'tags', 'meta')
+
 @dataclass
 class DbtExposure:
     name: str
@@ -54,7 +56,13 @@ class DbtExposure:
             url=url,
         )
 
-        depends_on = {'nodes': list(set([model['unique_id'] for model in models]))}
+        model_list = []
+        for model in models:
+            if model['resource_type'] == 'source':
+                model_list.append(f"source('{model['source_name']}', '{model['name']}')")
+            else:
+                model_list.append(f"ref('{model['name']}')")
+        depends_on = list(set(model_list))
         owner = {'name': owner.fullname, 'email': owner.name}
         tags = [f'tableau:{tag}' for tag in workbook.tags]
 
@@ -74,4 +82,6 @@ class DbtExposure:
         return dict((k, getattr(self, k)) for k, v in class_items if isinstance(v, property))
 
     def to_dict(self):
-        return {**self.__dict__, **self._properties()}
+        d = {**self.__dict__, **self._properties()}
+        d = {k: v for k, v in d.items() if k in VALID_PROPERTIES}
+        return d
