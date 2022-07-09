@@ -1,7 +1,7 @@
 import itertools
 import logging
 import os
-from typing import Collection, Dict, List, Union
+from typing import Collection, List
 
 import click
 
@@ -67,7 +67,7 @@ def _parse_tables_from_sql(workbooks_sqls: WorkbookModelsMapping, models) -> Wor
 
 
 def tableau_crawler(
-    manifest_path: Union[str, Dict],
+    manifest_path: str,
     dbt_package_name: str,
     tableau_projects_to_ignore: Collection[str],
     verbose: bool,
