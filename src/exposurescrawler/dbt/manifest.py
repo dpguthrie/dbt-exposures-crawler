@@ -1,4 +1,5 @@
 import json
+import yaml
 from collections import UserDict
 from typing import Any, Dict, Type
 
@@ -11,6 +12,10 @@ class DbtManifest(UserDict):
         with open(path) as file:
             manifest = json.load(file)
 
+        return cls(manifest)
+    
+    def from_json_str(cls: Type['DbtManifest'], json_str: str) -> 'DbtManifest':
+        manifest = json.loads(json_str)
         return cls(manifest)
 
     def retrieve_models_and_sources(self) -> Dict[str, Any]:
@@ -26,12 +31,12 @@ class DbtManifest(UserDict):
         for node_id, node in self.data['nodes'].items():
             fqn = '{}.{}.{}'.format(node['database'], node['schema'], node['alias'])
             node['materialized_name'] = fqn
-            models[fqn] = node
+            models[fqn.lower()] = node
 
         for node_id, node in self.data['sources'].items():
             fqn = '{}.{}.{}'.format(node['database'], node['schema'], node['name'])
             node['materialized_name'] = fqn
-            models[fqn] = node
+            models[fqn.lower()] = node
 
         return models
 
@@ -41,7 +46,12 @@ class DbtManifest(UserDict):
 
     def to_dict(self):
         return self.data
-
+    
     def save(self, path):
         with open(path, 'w') as file:
             json.dump(self.to_dict(), file, indent=4)
+
+    def save_to_yml(self, path):
+        d = {'exposures': [v for v in self['exposures'].values()]}
+        with open(path, 'w') as file:
+            yaml.dump(d, file)
