@@ -17,7 +17,7 @@ class DbtExposure:
     tags: Iterable[str] = field(default_factory=list)
 
     resource_type: str = 'exposure'
-    type: str = 'Dashboard'
+    type: str = 'dashboard'
 
     @classmethod
     def from_tableau_workbook(
