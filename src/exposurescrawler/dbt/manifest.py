@@ -49,6 +49,6 @@ class DbtManifest(UserDict):
             json.dump(self.to_dict(), file, indent=4)
 
     def save_to_yml(self, path):
-        d = {'exposures': [v for v in self['exposures'].values()]}
+        d = {'version': 2, 'exposures': [v for v in self['exposures'].values()]}
         with open(path, 'w') as file:
             yaml.dump(d, file)
