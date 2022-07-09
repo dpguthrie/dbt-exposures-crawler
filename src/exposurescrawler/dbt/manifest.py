@@ -51,4 +51,4 @@ class DbtManifest(UserDict):
     def save_to_yml(self, path):
         d = {'version': 2, 'exposures': [v for v in self['exposures'].values()]}
         with open(path, 'w') as file:
-            yaml.dump(d, file)
+            yaml.dump(d, file, sort_keys=False)
