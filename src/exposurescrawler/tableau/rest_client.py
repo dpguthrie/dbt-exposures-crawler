@@ -7,8 +7,8 @@ class TableauRestClient:
     Thin wrapper around the official Tableau Server client.
     """
 
-    def __init__(self, url: str, username: str, password: str):
-        tableau_auth = TSC.TableauAuth(username, password)
+    def __init__(self, url: str, username: str, password: str, site: str):
+        tableau_auth = TSC.TableauAuth(username, password, site)
 
         self.server = TSC.Server(url, use_server_version=True)
         self.server.auth.sign_in(tableau_auth)
