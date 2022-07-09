@@ -36,5 +36,6 @@ setup(
         'click ~= 8.0.1',
         'python-slugify ~= 4.0.1',
         'tableauserverclient ~= 0.10',
+        'PyYaml ~= 6.0',
     ],
 )
