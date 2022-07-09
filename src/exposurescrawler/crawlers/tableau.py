@@ -1,7 +1,7 @@
 import itertools
 import logging
 import os
-from typing import Collection, List
+from typing import Collection, Dict, List, Union
 
 import click
 
@@ -67,21 +67,32 @@ def _parse_tables_from_sql(workbooks_sqls: WorkbookModelsMapping, models) -> Wor
 
 
 def tableau_crawler(
-    manifest_path: str,
+    manifest_path_or_str: Union[str, Dict],
     dbt_package_name: str,
     tableau_projects_to_ignore: Collection[str],
     verbose: bool,
+    yml_path: str = None,
 ) -> None:
     # Enable verbose logging
     if verbose:
         logger().setLevel(logging.DEBUG)
+    
+    method: str = None
 
-    # Parse arguments
-    manifest_path = os.path.expandvars(manifest_path)
-    manifest_path = os.path.expanduser(manifest_path)
+    try:
+        manifest: DbtManifest = DbtManifest.from_json_str(manifest_path_or_str)
+        method = 'save_to_yml'
+        manifest_path_or_str = yml_path
+    
+    except ValueError:
+    
+        # Parse arguments
+        manifest_path_or_str = os.path.expandvars(manifest_path_or_str)
+        manifest_path_or_str = os.path.expanduser(manifest_path_or_str)
 
-    # Parse the dbt manifest JSON file
-    manifest: DbtManifest = DbtManifest.from_file(manifest_path)
+        # Parse the dbt manifest JSON file
+        manifest: DbtManifest = DbtManifest.from_file(manifest_path_or_str)
+        method = 'save'
 
     # Retrieve all models
     models = manifest.retrieve_models_and_sources()
@@ -91,6 +102,7 @@ def tableau_crawler(
         os.environ['TABLEAU_URL'],
         os.environ['TABLEAU_USERNAME'],
         os.environ['TABLEAU_PASSWORD'],
+        os.environ['TABLEAU_SITE'],
     )
 
     # Retrieve custom SQLs and find model references
@@ -143,8 +155,8 @@ def tableau_crawler(
 
     # Persist the modified manifest
     logger().info('')
-    logger().info(f'💾 Writing results to file: {manifest_path}')
-    manifest.save(manifest_path)
+    logger().info(f'💾 Writing results to file: {manifest_path_or_str}')
+    getattr(manifest, method)(manifest_path_or_str)
 
 
 @click.command()
@@ -168,13 +180,21 @@ def tableau_crawler(
     help='The name of Tableau projects (folders) to ignore',
 )
 @click.option('-v', '--verbose', is_flag=True, default=False, help='Enable verbose logging')
+@click.option('-y', '--yml-path', default='exposures/tableau_exposures.yml', help='Location of yml file')
 def tableau_crawler_command(
     manifest_path: str,
     dbt_package_name: str,
     tableau_projects_to_ignore: Collection[str],
     verbose: bool,
+    yml_path: str,
 ):
-    tableau_crawler(manifest_path, dbt_package_name, tableau_projects_to_ignore, verbose)
+    tableau_crawler(
+        manifest_path,
+        dbt_package_name,
+        tableau_projects_to_ignore,
+        verbose,
+        yml_path
+    )
 
 
 if __name__ == '__main__':
