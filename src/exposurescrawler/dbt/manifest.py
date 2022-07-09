@@ -11,6 +11,7 @@ class DbtManifest(UserDict):
     def from_file(cls: Type['DbtManifest'], path: str) -> 'DbtManifest':
         with open(path) as file:
             manifest = json.load(file)
+            manifest['exposures'] = {}
 
         return cls(manifest)
     
