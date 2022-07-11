@@ -71,7 +71,7 @@ def tableau_crawler(
     dbt_package_name: str,
     tableau_projects_to_ignore: Collection[str],
     verbose: bool,
-    yml_path: str = None,
+    yml_path: str,
 ) -> None:
     # Enable verbose logging
     if verbose:
@@ -146,7 +146,7 @@ def tableau_crawler(
     # Persist the modified manifest
     logger().info('')
     logger().info(f'💾 Writing results to file: {manifest_path}')
-    manifest.save_to_yml('models/tableau_exposures.yml')
+    manifest.save_to_yml(yml_path)
 
 
 @click.command()
@@ -170,7 +170,7 @@ def tableau_crawler(
     help='The name of Tableau projects (folders) to ignore',
 )
 @click.option('-v', '--verbose', is_flag=True, default=False, help='Enable verbose logging')
-@click.option('-y', '--yml-path', default='exposures/tableau_exposures.yml', help='Location of yml file')
+@click.option('-y', '--yml-path', default='models/tableau_exposures.yml', help='Location of yml file')
 def tableau_crawler_command(
     manifest_path: str,
     dbt_package_name: str,
